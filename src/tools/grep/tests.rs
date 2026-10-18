@@ -112,3 +112,13 @@ async fn checks_its_arguments() {
         assert_eq!(call("grep", &input).await, Err(error.into()), "{input}");
     }
 }
+
+#[tokio::test]
+async fn shows_lines_that_are_not_utf8() {
+    let directory = TemporaryDir::new("grep-not-utf8");
+    std::fs::write(directory.path().join("a.txt"), b"caf\xe9 add\n").unwrap();
+    assert_eq!(
+        grep(&directory, json!({ "pattern": "add" })).await,
+        Ok("a.txt:1:caf\u{fffd} add\n".into())
+    );
+}

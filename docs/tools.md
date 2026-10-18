@@ -46,7 +46,7 @@ It takes a `pattern`, a regular expression in [Rust regex syntax](https://docs.r
 - `context`: the number of lines to show before and after each match
 - `limit`: the most matches to return. Default: 100
 
-As ripgrep does by default, it skips files that `.gitignore` lists, hidden files and binary files. It returns each matching line as `path:line:text`, sorted by path. Lines of context look like `path-line-text`, and `--` separates groups of lines that are not next to each other. When it reaches `limit`, it stops and ends with a note such as `… stopped at 100 matches, use limit for more or refine the pattern`. With no matches it returns `no matches`. Output is cut at 20,000 bytes. The call shows its pattern and path, such as `grep fn main in src`.
+As ripgrep does by default, it skips files that `.gitignore` lists, hidden files and binary files. It returns each matching line as `path:line:text`, sorted by path. Text that is not valid UTF-8 shows � in place of the bytes it cannot read. Lines of context look like `path-line-text`, and `--` separates groups of lines that are not next to each other. When it reaches `limit`, it stops and ends with a note such as `… stopped at 100 matches, use limit for more or refine the pattern`. With no matches it returns `no matches`. Output is cut at 20,000 bytes. The call shows its pattern and path, such as `grep fn main in src`.
 
 ## Search order
 

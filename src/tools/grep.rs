@@ -1,4 +1,5 @@
 use super::{MAX_OUTPUT, argument, number, program, tool, truncate};
+use base64::{Engine, engine::general_purpose::STANDARD};
 use serde_json::{Value, json};
 use std::{fmt::Write, process::Stdio, sync::OnceLock};
 use tokio::{
@@ -83,7 +84,7 @@ pub(super) async fn run(input: &Value) -> Result<String, String> {
             _ => continue,
         };
         let data = &event["data"];
-        let path = data["path"]["text"].as_str().unwrap_or_default();
+        let path = &*text_of(&data["path"]);
         let line = data["line_number"].as_u64().unwrap_or_default();
         let follows_last = last
             .as_ref()
@@ -95,7 +96,7 @@ pub(super) async fn run(input: &Value) -> Result<String, String> {
         if last.is_some() && context.is_some_and(|lines| lines > 0) && !follows_last {
             text.push_str("--\n");
         }
-        let line_text = data["lines"]["text"].as_str().unwrap_or_default();
+        let line_text = text_of(&data["lines"]);
         let _ = write!(text, "{path}{separator}{line}{separator}{line_text}");
         if !text.ends_with('\n') {
             text.push('\n');
@@ -131,6 +132,17 @@ pub(super) async fn run(input: &Value) -> Result<String, String> {
         text.push_str(errors);
     }
     Ok(truncate(text))
+}
+
+fn text_of(data: &Value) -> String {
+    if let Some(text) = data["text"].as_str() {
+        return text.to_string();
+    }
+    data["bytes"]
+        .as_str()
+        .and_then(|bytes| STANDARD.decode(bytes).ok())
+        .map(|bytes| String::from_utf8_lossy(&bytes).into_owned())
+        .unwrap_or_default()
 }
 
 #[cfg(test)]
