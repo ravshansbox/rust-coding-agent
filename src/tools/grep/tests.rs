@@ -60,6 +60,15 @@ async fn shows_lines_around_matches() {
 }
 
 #[tokio::test]
+async fn leaves_out_separators_without_context_lines() {
+    let directory = project("grep-zero-context");
+    assert_eq!(
+        grep(&directory, json!({ "pattern": "add\\(", "context": 0 })).await,
+        Ok("a.rs:1:fn add(a: i32, b: i32) -> i32 {\na.rs:6:    add(1, 2);\n".into())
+    );
+}
+
+#[tokio::test]
 async fn stops_at_the_match_limit() {
     let directory = project("grep-limit");
     assert_eq!(

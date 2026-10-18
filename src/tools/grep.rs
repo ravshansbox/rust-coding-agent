@@ -92,7 +92,7 @@ pub(super) async fn run(input: &Value) -> Result<String, String> {
             stopped = true;
             break;
         }
-        if last.is_some() && context.is_some() && !follows_last {
+        if last.is_some() && context.is_some_and(|lines| lines > 0) && !follows_last {
             text.push_str("--\n");
         }
         let line_text = data["lines"]["text"].as_str().unwrap_or_default();
