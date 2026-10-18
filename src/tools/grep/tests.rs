@@ -78,6 +78,15 @@ async fn stops_at_the_match_limit() {
 }
 
 #[tokio::test]
+async fn leaves_out_context_of_matches_past_the_limit() {
+    let directory = project("grep-limit-context");
+    assert_eq!(
+        grep(&directory, json!({ "pattern": "a \\+ b|add\\(1", "context": 2, "limit": 1 })).await,
+        Ok("a.rs-1-fn add(a: i32, b: i32) -> i32 {\na.rs:2:    a + b\na.rs-3-}\na.rs-4-\n… stopped at 1 match, use limit for more or refine the pattern".into())
+    );
+}
+
+#[tokio::test]
 async fn says_when_nothing_matches() {
     let directory = project("grep-no-match");
     assert_eq!(

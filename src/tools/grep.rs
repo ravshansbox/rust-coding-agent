@@ -73,6 +73,7 @@ pub(super) async fn run(input: &Value) -> Result<String, String> {
     let mut text = String::new();
     let mut matches = 0;
     let mut last: Option<(String, u64)> = None;
+    let mut last_match = 0;
     let mut stopped = false;
     while let Some(event) = events.next_line().await.map_err(failed)? {
         let Ok(event) = serde_json::from_str::<Value>(&event) else {
@@ -89,7 +90,8 @@ pub(super) async fn run(input: &Value) -> Result<String, String> {
         let follows_last = last
             .as_ref()
             .is_some_and(|(last_path, last_line)| last_path == path && last_line + 1 == line);
-        if matches == limit && (separator == ':' || !follows_last) {
+        let after_last_match = line <= last_match + context.unwrap_or_default();
+        if matches == limit && (separator == ':' || !follows_last || !after_last_match) {
             stopped = true;
             break;
         }
@@ -104,6 +106,7 @@ pub(super) async fn run(input: &Value) -> Result<String, String> {
         last = Some((path.to_string(), line));
         if separator == ':' {
             matches += 1;
+            last_match = line;
         }
         if text.len() > MAX_OUTPUT {
             break;
